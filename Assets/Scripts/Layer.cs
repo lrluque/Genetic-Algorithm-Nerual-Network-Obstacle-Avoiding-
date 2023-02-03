@@ -3,32 +3,32 @@ using System.Collections.Generic;
 public class Layer
 {
     private List<Neuron> neurons;
-    private List<float> outputs;
 
     public Layer()
     {
         this.neurons = new List<Neuron>();
-        this.outputs = new List<float>();
+
     }
 
     public void AddNeuron(Neuron neuron)
     {
-        this.neurons.Add(neuron);
+        neurons.Add(neuron);
     }
+        
 
     public List<Neuron> getNeurons()
     {
         return this.neurons;
     }
 
-    public List<float> ComputeOutputs()
+    public float[] ComputeOutput(float[] inputs)
     {
-        this.outputs.Clear();
-        foreach (Neuron neuron in neurons)
+        float[] output = new float[neurons.Count];
+        for (int i = 0; i < neurons.Count; i++)
         {
-            outputs.Add(neuron.ComputeOutput());
+            output[i] = neurons[i].ComputeOutput(inputs);
         }
-        return this.outputs;
+        return output;
     }
 
 

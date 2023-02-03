@@ -5,57 +5,33 @@ using Random = UnityEngine.Random;
 
 public class Neuron
 {
-   private List<float> weights;
+   private float[] weights;
    private float bias;
    private float output;
    private ActivationFunction activationFunction;
-   private List<float> inputs;
 
 
-    public Neuron()
+    public Neuron(int numInputs)
     {
-        this.inputs = new List<float>();
-        this.weights = new List<float>();
-        this.bias = 1f;
-        inputs.Add(bias);
-        this.weights.Add(GenerateRandom());
+        weights = new float[numInputs];
+        for (int i = 0; i < numInputs; i++)
+        {
+            weights[i] = Random.Range(-1f, 1f); 
+        }
+        bias = Random.Range(-1f, 1f);
         this.activationFunction = new TanhActivationFunction();
     }
 
-    public void AddInput(float input, float weight)
+
+    public float ComputeOutput(float[] inputs)
     {
-        this.inputs.Add(input);
-        this.weights.Add(weight);
-    }
-
-    public void AddInputs(float[] inputs, bool generateWeights)
-    {
-        this.inputs.Clear();
-        for(int inputIndex = 0; inputIndex < inputs.Length; inputIndex++){
-            this.inputs.Add(inputs[inputIndex]);
-            this.weights.Add(GenerateRandom());
-        }
-    }
-
-
-
-    public float ComputeOutput()
-    {
-        this.output = 0;
-        int indexCounter = 0;
-        foreach (float input in inputs)
+        float sum = bias;
+        for (int i = 0; i < inputs.Length; i++)
         {
-            output += (input * weights[indexCounter]);
-            indexCounter++;
+            sum += inputs[i] * weights[i];
         }
-        output = this.activationFunction.CalculateAF(output);
+        output = activationFunction.CalculateAF(sum);
         return output;
     }
-
-    private float GenerateRandom()
-    {
-        return Random.Range(-1f, 1f);
-    }
-
 
 }
