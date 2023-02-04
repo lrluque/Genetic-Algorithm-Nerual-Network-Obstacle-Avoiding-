@@ -6,8 +6,8 @@ using Random = UnityEngine.Random;
 public class Neuron
 {
    private float[] weights;
-   private float bias;
    private float output;
+   private float bias;
    private ActivationFunction activationFunction;
 
 

@@ -4,7 +4,7 @@ public class NeuralNetwork
 {
 
     private List<Layer> layers;
-    public float score;
+    private float score;
 
     public NeuralNetwork()
     {
@@ -29,6 +29,5 @@ public class NeuralNetwork
     public void SetScore(float score){
         this.score = score;
     }
-
 
 }

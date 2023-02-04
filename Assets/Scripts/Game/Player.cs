@@ -31,9 +31,18 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float directionY = networkManager.GetOutput();
+        float output = networkManager.GetOutput();
+        if (output >= -1 && output <= -0.3)
+        {
+            output = -1f;
+        }else if (output > -0.3 && output <= 0.3)
+        {
+            output = 0f;
+        }else{
+            output = 1f;
+        }
+        float directionY = output;
         playerDirection = new Vector2(0, directionY).normalized;
-        score += 1 * Time.deltaTime;
         initialPos = playerPosition.transform.position;
     }
 
