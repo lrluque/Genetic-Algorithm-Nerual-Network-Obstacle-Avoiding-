@@ -18,14 +18,16 @@ public class NeuralNetworkManager : MonoBehaviour
     [SerializeField] private int currentGenome;
 
     [SerializeField] private float[] inputs;
-    [SerializeField] private float output;
+    [SerializeField] private float output, previousMovement;
 
-    private float score, scoreSum;
+    public int numberOfMovements;
+
+    private float fitness, fitnessSum, time;
 
     private NeuralNetwork[] networks;
     private NeuralNetwork currentNetwork;
 
-    public TextMeshProUGUI populationTXT, mutationRateTXT, currentGenerationTXT, currentGenomeTXT, scoreTXT, scoreSumTXT;
+    public TextMeshProUGUI populationTXT, mutationRateTXT, currentGenerationTXT, currentGenomeTXT, fitnessTXT, fitnessSumTXT;
     
     
 
@@ -33,8 +35,10 @@ public class NeuralNetworkManager : MonoBehaviour
     {   
         raycastManager = this.GetComponent<RaycastManager>();
         inputs = new float[] {15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f};
-        score = 0;
-        scoreSum = 0;
+        fitness = 0;
+        fitnessSum = 0;
+        previousMovement = -10f;
+        numberOfMovements = 1;
         networks = GeneratePopulation();
         Debug.Log(networks.Length);
         currentGenome = 0;
@@ -49,7 +53,15 @@ public class NeuralNetworkManager : MonoBehaviour
         UpdateText();
         UpdateInputs();
         output = CalculateOutput();
-        score += 1 * Time.deltaTime;
+        previousMovement = CalculateMovement();
+        time += 1 * Time.deltaTime;
+        CalculateFitness();
+    }
+
+    public float CalculateFitness()
+    {
+        fitness = time;
+        return fitness;
     }
 
     private float CalculateOutput(){
@@ -73,32 +85,139 @@ public class NeuralNetworkManager : MonoBehaviour
     {
         currentGenerationTXT.text = "GENERATION " + currentGeneration;
         currentGenomeTXT.text = "GENOME " + (currentGenome + 1);
-        scoreTXT.text = "Score: " + score;
-        scoreSumTXT.text = "Average score: " + CalculateAverageScore();
+        fitnessTXT.text = "Fitness: " + fitness;
+        fitnessSumTXT.text = "Average fitness: " + CalculateAveragefitness();
     }
     public void Reset()
     {
-        networks[currentGenome].SetScore(score);
-        scoreSum += score;
-        score = 0;
+        networks[currentGenome].SetFitness(fitness);
+        fitnessSum += fitness;
+        fitness = 0;
+        time = 0;
+        previousMovement = -10;
+        numberOfMovements = 0;
         currentGenome++;
         if (currentGenome < population)
         {
             currentNetwork = networks[currentGenome];
         }else{
             currentGeneration++;
-            scoreSum = 0;
+            fitnessSum = 0;
             currentGenome = 0;
-            networks = GeneratePopulation();
+            TrainPopulation();
         }
     }
 
-    public float CalculateAverageScore()
+    private void TrainPopulation()
     {
-        return scoreSum / (currentGenome + 1);
+        networks = TournamentSelection();
+        Crossover();
+        Mutate();
     }
 
-    public NeuralNetwork[] GeneratePopulation()
+    private NeuralNetwork[] TournamentSelection()
+    {
+        NeuralNetwork[] newNetworks = new NeuralNetwork[population];
+        for (int i = 0; i < population / 2; i++)
+        {
+            int[] selection = Utils.GetTwoRandomNetworks(networks);
+            if (networks[selection[0]].GetFitness() >= networks[selection[1]].GetFitness())
+            {
+                newNetworks[i] = networks[selection[0]];
+            }else{
+                newNetworks[i] = networks[selection[1]];
+            }
+            networks[selection[0]] = null;
+            networks[selection[1]] = null;
+        }
+        return newNetworks;
+    }
+
+    private void Mutate()
+    {
+        for (int i = 0; i < networks.Length; i++)
+        {
+            for (int j = 0; j < networks[i].GetLayers().Count; j++)
+            {
+                foreach (Neuron neuron in networks[i].GetLayers()[j].getNeurons())
+                {
+                    neuron.MutateWeights(mutationRate);
+                }
+            }
+        }
+    }
+
+    public float CalculateMovement()
+    {
+        float movement;
+        if (output >= -1 && output <= -0.3)
+        {
+            movement = -1f;
+        }else if (output > -0.3 && output <= 0.3)
+        {
+            movement = 0f;
+        }else{
+            movement = 1f;
+        }
+        if (movement != previousMovement)
+        {
+            numberOfMovements++;
+        }
+        return movement;
+    }
+
+    private void Crossover()
+    {
+        for (int i = (population / 2); i < population; i++)
+        {
+            int[] selection = Utils.GetTwoRandomNumbers(0, (population / 2) - 1);
+            NeuralNetwork newNet = Cross(networks[selection[0]], networks[selection[1]]);
+            networks[i] = newNet;
+        }
+    }
+
+    private NeuralNetwork Cross(NeuralNetwork nn1, NeuralNetwork nn2)
+    {
+        NeuralNetwork newNet = new NeuralNetwork();
+        int numLayers = nn1.GetLayers().Count;
+        for (int i = 0; i < numLayers; i++)
+        {
+            Layer layer1 = nn1.GetLayers()[i];
+            Layer layer2 = nn2.GetLayers()[i];
+            Layer newNetLayer = new Layer();
+
+            int numNeurons = layer1.getNeurons().Count;
+            for (int j = 0; j < numNeurons; j++)
+            {
+                Neuron neuron1 = layer1.getNeurons()[j];
+                Neuron neuron2 = layer2.getNeurons()[j];
+                Neuron newNetNeuron = new Neuron(neuron1.weights.Length);
+
+                for (int k = 0; k < neuron1.weights.Length; k++)
+                {
+                    float randomValue = UnityEngine.Random.value;
+                    if (randomValue < 0.5f)
+                    {
+                        newNetNeuron.weights[k] = neuron1.weights[k];
+                    }
+                    else
+                    {
+                        newNetNeuron.weights[k] = neuron2.weights[k];
+                    }
+                }
+                newNetLayer.AddNeuron(newNetNeuron);
+            }
+            newNet.AddLayer(newNetLayer);
+        }
+        return newNet;
+    }
+
+    private float CalculateAveragefitness()
+    {
+        return fitnessSum / (currentGenome + 1);
+    }
+
+    private NeuralNetwork[] GeneratePopulation()
     {
         NeuralNetwork[] networkList = new NeuralNetwork[population];
         for (int i = 0; i < population; i++)
@@ -109,7 +228,7 @@ public class NeuralNetworkManager : MonoBehaviour
         return networkList;
     }
     
-    public NeuralNetwork CreateRandomNetwork()
+    private NeuralNetwork CreateRandomNetwork()
     {
         Layer hiddenLayer1 = new Layer();
         Layer hiddenLayer2 = new Layer();

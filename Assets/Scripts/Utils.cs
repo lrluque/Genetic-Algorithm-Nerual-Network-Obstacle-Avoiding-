@@ -13,4 +13,24 @@ public static class Utils
         Array.Copy(data, index, result, 0, length);
         return result;
     }
+
+    public static int[] GetTwoRandomNetworks(NeuralNetwork[] array)
+    {
+        Random random = new Random();
+        int[] randomPositions = new int[2];
+        do {
+            randomPositions[0] = random.Next(0, array.Length);
+            randomPositions[1] = random.Next(0, array.Length);
+        }while(array[randomPositions[0]] == null || array[randomPositions[1]] == null);
+        return randomPositions;
+    }
+
+    public static int[] GetTwoRandomNumbers(int a, int b)
+    {
+        Random random = new Random();
+        int num1 = random.Next(a, b + 1);
+        int num2 = random.Next(a, b + 1);
+
+        return new int[] { num1, num2 };
+    }
 }

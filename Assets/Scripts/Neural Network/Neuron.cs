@@ -5,7 +5,7 @@ using Random = UnityEngine.Random;
 
 public class Neuron
 {
-   private float[] weights;
+   public float[] weights;
    private float output;
    private float bias;
    private ActivationFunction activationFunction;
@@ -32,6 +32,18 @@ public class Neuron
         }
         output = activationFunction.CalculateAF(sum);
         return output;
+    }
+
+    public void MutateWeights(float mutationRate)
+    {
+        for (int i = 0; i < weights.Length; i++)
+        {
+            float random = Random.Range(0f, 1f);
+            if (random <= mutationRate)
+            {
+                weights[i] = Random.Range(-1f, 1f);
+            }
+        }
     }
 
 }

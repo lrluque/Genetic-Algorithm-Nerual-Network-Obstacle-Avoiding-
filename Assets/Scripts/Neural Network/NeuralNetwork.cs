@@ -4,7 +4,7 @@ public class NeuralNetwork
 {
 
     private List<Layer> layers;
-    private float score;
+    private float fitness;
 
     public NeuralNetwork()
     {
@@ -26,8 +26,19 @@ public class NeuralNetwork
         return latestLayerOutput;
     }
     
-    public void SetScore(float score){
-        this.score = score;
+    public void SetFitness(float fitness)
+    {
+        this.fitness = fitness;
+    }
+
+    public float GetFitness()
+    {
+        return fitness;
+    }
+
+    public List<Layer> GetLayers()
+    {
+        return layers;
     }
 
 }
