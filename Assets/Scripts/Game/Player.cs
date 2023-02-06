@@ -19,6 +19,8 @@ public class Player : MonoBehaviour
 
     public GameObject networkObject;
     public GameObject playerPosition;
+    public GameObject manager;
+    public Manager gameManagerScript;
 
     // Start is called before the first frame update
     void Start()
@@ -26,6 +28,7 @@ public class Player : MonoBehaviour
         initialPos = this.transform.position;
         rb = GetComponent<Rigidbody2D>();
         networkManager = networkObject.GetComponent<NeuralNetworkManager>();
+        gameManagerScript = manager.GetComponent<Manager>();
     }
 
     // Update is called once per frame
@@ -41,14 +44,17 @@ public class Player : MonoBehaviour
     }
 
     public void restartPlayer(){
+        /*
         GameObject[] obstacles = GameObject.FindGameObjectsWithTag("Obstacle");
         foreach(GameObject obj in obstacles) {
             if(obj.transform.name == "Obstacle(Clone)"){
                 Destroy(obj);
             }
         }
+        */
         score = 0;
         this.transform.position = initialPos;
+        gameManagerScript.ResetPosition();  
         networkManager.Reset();
     }
 

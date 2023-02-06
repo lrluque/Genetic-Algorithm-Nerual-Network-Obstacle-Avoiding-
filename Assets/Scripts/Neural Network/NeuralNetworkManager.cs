@@ -12,7 +12,7 @@ public class NeuralNetworkManager : MonoBehaviour
 
     [SerializeField] private int numberOfGenerations;
     [SerializeField] private int population;
-    [SerializeField] private float mutationRate;
+    [SerializeField] private float mutationRate, crossoverRate;
     [SerializeField] private int currentGeneration;
 
     [SerializeField] private int currentGenome;
@@ -88,37 +88,38 @@ public class NeuralNetworkManager : MonoBehaviour
         fitnessTXT.text = "Fitness: " + fitness;
         fitnessSumTXT.text = "Average fitness: " + CalculateAveragefitness();
     }
-    public void Reset()
-    {
-        networks[currentGenome].SetFitness(fitness);
-        fitnessSum += fitness;
-        fitness = 0;
-        time = 0;
-        previousMovement = -10;
-        numberOfMovements = 0;
-        currentGenome++;
-        if (currentGenome < population)
-        {
-            currentNetwork = networks[currentGenome];
-        }else{
-            currentGeneration++;
-            fitnessSum = 0;
-            currentGenome = 0;
-            TrainPopulation();
-        }
-    }
 
     private void TrainPopulation()
     {
-        networks = TournamentSelection();
-        Crossover();
-        Mutate();
+        NeuralNetwork[] newNetworks = new NeuralNetwork[population];
+        int counter = 0;
+        
+        do {
+            NeuralNetwork[] selection = TournamentSelection();
+            newNetworks[counter] = selection[0];
+            newNetworks[counter + 1] = selection[1];
+            counter += 2;
+            if (counter < population)
+            {
+                float crossoverRandom = UnityEngine.Random.value;
+                if (crossoverRandom < crossoverRate)
+                {
+                    NeuralNetwork children1 = Cross(selection[0], selection[1]);
+                    NeuralNetwork children2 = Cross(selection[0], selection[1]);
+                    newNetworks[counter] = children1;
+                    newNetworks[counter + 1] = children2;
+                    counter += 2;
+                }
+            }
+        } while (counter < population);
+        networks = newNetworks;
     }
+
 
     private NeuralNetwork[] TournamentSelection()
     {
-        NeuralNetwork[] newNetworks = new NeuralNetwork[population];
-        for (int i = 0; i < population / 2; i++)
+        NeuralNetwork[] newNetworks = new NeuralNetwork[2];
+        for (int i = 0; i < 2; i++)
         {
             int[] selection = Utils.GetTwoRandomNetworks(networks);
             if (networks[selection[0]].GetFitness() >= networks[selection[1]].GetFitness())
@@ -127,8 +128,6 @@ public class NeuralNetworkManager : MonoBehaviour
             }else{
                 newNetworks[i] = networks[selection[1]];
             }
-            networks[selection[0]] = null;
-            networks[selection[1]] = null;
         }
         return newNetworks;
     }
@@ -164,16 +163,6 @@ public class NeuralNetworkManager : MonoBehaviour
             numberOfMovements++;
         }
         return movement;
-    }
-
-    private void Crossover()
-    {
-        for (int i = (population / 2); i < population; i++)
-        {
-            int[] selection = Utils.GetTwoRandomNumbers(0, (population / 2) - 1);
-            NeuralNetwork newNet = Cross(networks[selection[0]], networks[selection[1]]);
-            networks[i] = newNet;
-        }
     }
 
     private NeuralNetwork Cross(NeuralNetwork nn1, NeuralNetwork nn2)
@@ -222,12 +211,32 @@ public class NeuralNetworkManager : MonoBehaviour
         NeuralNetwork[] networkList = new NeuralNetwork[population];
         for (int i = 0; i < population; i++)
         {
-            Debug.Log(i);
             networkList[i] = CreateRandomNetwork();
         }
         return networkList;
     }
-    
+
+    public void Reset()
+    {
+        networks[currentGenome].SetFitness(fitness);
+        fitnessSum += fitness;
+        fitness = 0;
+        time = 0;
+        previousMovement = -10;
+        numberOfMovements = 0;
+        currentGenome++;
+        if (currentGenome < population)
+        {
+            currentNetwork = networks[currentGenome];
+        }else{
+            Debug.Log("GENERATION " + currentGeneration + ": " + CalculateAveragefitness());
+            currentGeneration++;
+            fitnessSum = 0;
+            currentGenome = 0;
+            TrainPopulation();
+        }
+    }
+
     private NeuralNetwork CreateRandomNetwork()
     {
         Layer hiddenLayer1 = new Layer();
