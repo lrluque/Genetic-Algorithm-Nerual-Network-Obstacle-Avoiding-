@@ -14,6 +14,7 @@ public class NeuralNetworkManager : MonoBehaviour
     [SerializeField] private int population;
     [SerializeField] private float mutationRate, crossoverRate;
     [SerializeField] private int currentGeneration;
+    [SerializeField] private int crossPercentage;
 
     [SerializeField] private int currentGenome;
 
@@ -39,6 +40,7 @@ public class NeuralNetworkManager : MonoBehaviour
         fitnessSum = 0;
         previousMovement = -10f;
         numberOfMovements = 1;
+        crossPercentage = (int) (crossPercentage / 100) * population;
         networks = GeneratePopulation();
         Debug.Log(networks.Length);
         currentGenome = 0;
@@ -99,7 +101,7 @@ public class NeuralNetworkManager : MonoBehaviour
             newNetworks[counter] = selection[0];
             newNetworks[counter + 1] = selection[1];
             counter += 2;
-            if (counter < population)
+            if (counter < population && crossPercentage > 0)
             {
                 float crossoverRandom = UnityEngine.Random.value;
                 if (crossoverRandom < crossoverRate)
@@ -109,8 +111,10 @@ public class NeuralNetworkManager : MonoBehaviour
                     newNetworks[counter] = children1;
                     newNetworks[counter + 1] = children2;
                     counter += 2;
+                    crossPercentage--;
                 }
             }
+            Mutate();
         } while (counter < population);
         networks = newNetworks;
     }
@@ -233,6 +237,7 @@ public class NeuralNetworkManager : MonoBehaviour
             currentGeneration++;
             fitnessSum = 0;
             currentGenome = 0;
+            crossPercentage = (int) (crossPercentage / 100) * population;
             TrainPopulation();
         }
     }
