@@ -1,5 +1,5 @@
 # Genetic-Algorithm-Neural-Network-Obstacle-Avoiding
 
+![Preview](https://github.com/lrluque/Genetic-Algorithm-Neural-Network-Obstacle-Avoiding/assets/16742563/4efb46f8-cee9-499c-a997-b383357fb5be)
 
-https://github.com/lrluque/Genetic-Algorithm-Neural-Network-Obstacle-Avoiding/assets/16742563/4827e6f9-fdf8-4a93-9a85-a0e64e3b2640
 
